@@ -137,14 +137,14 @@ class HBNBCommand(cmd.Cmd):
                         try:
                             val = float(val)
                         except ValueError:
-                            pass
+                            continue
                 params[k] = val
 
-            if not params == ():
-                new_instance = eval(cls_name)()
-            else:
+            if params == ():
                 new_instance = eval(cls_name)(**params)
                 storage.new(new_instance)
+            else:
+                new_instance = eval(cls_name)()
 
             print(new_instance.id)
             new_instance.save()
