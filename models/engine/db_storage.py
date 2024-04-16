@@ -60,5 +60,4 @@ class DBStorage:
         """ Creates all the tables and loads them to db """
         Base.metadata.create_all(self.__engine)
         new_session = sessionmaker(bind=self.__engine, expire_on_commit=False)
-        Session = scoped_session(new_session)
-        self.__session = Session()
+        self.__session = scoped_session(new_session)
