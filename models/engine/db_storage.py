@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 """ database storage """
+import sys
 from os import getenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
@@ -33,13 +34,14 @@ class DBStorage:
         """ Query objs depending of the class name """
         cls_list = [User, State, City, Amenity, Place, Review]
 
-        if cls:
-            cls_list = [cls] if isinstance(cls, str) else [cls]
-        obj_list = []
-        for cls in cls_list:
-            cls_objs = self.__session.query(cls).all()
-            obj_list.extend(cls_objs)
-        return {f"{type(o).__name__}.{o.id}": o for o in obj_list}
+        if cls is None:
+            obj_list = [self.__session.query(cls).all() for cls in cls_list]
+            obj_list = [o for slst in obj_list for o in slst]
+        else:
+            if isinstance(cls, str):
+                cls = eval(cls)
+            obj_list = self.__session.query(cls).all()
+        return {"{}.{}".format(type(o).__name__, o.id): o for o in obj_list}
 
     def new(self, obj):
         """ Adds the obj to the current db session """
@@ -51,11 +53,12 @@ class DBStorage:
 
     def delete(self, obj=None):
         """ Delete from the current db session obj if not None """
-        if obj:
+        if obj is not None:
             self.__session.delete(obj)
 
     def reload(self):
         """ Creates all the tables and loads them to db """
         Base.metadata.create_all(self.__engine)
         new_session = sessionmaker(bind=self.__engine, expire_on_commit=False)
-        self.__session = scoped_session(new_session)
+        Session = scoped_session(new_session)
+        self.__session = Session()

@@ -140,14 +140,19 @@ class HBNBCommand(cmd.Cmd):
                             continue
                 params[k] = val
 
-            if params == ():
-                new_instance = eval(cls_name)(**params)
-                storage.new(new_instance)
-            else:
+            if cls_name == "State" and "name" not in params:
+                raise SyntaxError("** name missing **")
+
+            new_instance = None
+
+            if not params:
                 new_instance = eval(cls_name)()
+            else:
+                new_instance = eval(cls_name)(**params)
+
+            new_instance.save()
 
             print(new_instance.id)
-            new_instance.save()
 
         except SyntaxError as Err:
             print(str(Err))
@@ -228,15 +233,14 @@ class HBNBCommand(cmd.Cmd):
         print_list = []
 
         if args:
-            args = args.split(' ')[0]  # remove possible trailing args
+            args = args.split(' ')[0]
             if args not in HBNBCommand.classes:
                 print("** class doesn't exist **")
                 return
-            for k, v in storage._FileStorage__objects.items():
-                if k.split('.')[0] == args:
-                    print_list.append(str(v))
+            for k, v in storage.all(args).items():
+                print_list.append(str(v))
         else:
-            for k, v in storage._FileStorage__objects.items():
+            for k, v in storage.all().items():
                 print_list.append(str(v))
 
         print(print_list)
