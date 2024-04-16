@@ -1,7 +1,10 @@
 #!/usr/bin/python3
 """ Place Module for HBNB project """
+from os import getenv
+from models.amenity import Amenity
+from models.review import Review
 from models.base_model import BaseModel, Base
-from sqlalchemy import Column, String, Float, Integer, ForeignKey
+from sqlalchemy import Column, String, Float, Integer, ForeignKey, Table
 from sqlalchemy.orm import relationship
 
 
@@ -50,3 +53,4 @@ class Place(BaseModel, Base):
         """ linked amenities """
         if isinstance(param, Amenity):
             self.amenity_ids.append(param.id)
+
