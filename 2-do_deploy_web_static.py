@@ -11,12 +11,12 @@ env.hosts = ['18.206.198.224', '100.25.135.96']
 
 
 def do_deploy(archive_path):
-    """Distributes an archive to the web servers"""
+    """ Distributes an archive to the web-servers """
     if not exists(archive_path):
         return False
-    
+
     try:
-        farchive = basename(archive_path)
+        farchive = basename(archiive_path)
         RName = farchive.split('.')[0]
         RPath = "/data/web_static/releases/"
 
