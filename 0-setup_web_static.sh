@@ -1,41 +1,43 @@
 #!/usr/bin/env bash
-# Script for setting up a web static
+# This script configures web servers for deployment
 
-# Updates package
-sudo apt-get update
-
-# Check for nginx if it is installed or not
-if ! dpkg -l | grep -q nginx; then
-    sudo apt-get -y install nginx
+if [[ $EUID -ne 0 ]]; then
+    echo "You need to be root run this script."
+    exit 1
 fi
 
-# Turns on firewall
-sudo ufw allow 'Nginx HTTP'
+# install nginx if it doesn't exist
+command -v nginx > /dev/null
+if [[ $? -eq 1 ]]; then
+    apt install nginx -y
+fi
 
-# Creation of necessary directories
-path="/data/web_static/"
-sudo mkdir -p "$path/shared/"
-sudo mkdir -p "$path/releases/test/"
+# create needed directories
+mkdir -p /data/web_static/shared 2> /dev/null
+mkdir -p /data/web_static/releases/test 2> /dev/null
 
-# HTML content
-sudo tee "$path/releases/test/index.html" >/dev/null <<EOF
-<html>
+# a dummy HTML to check it works
+echo "
+<html lang='en'>
     <head>
     </head>
     <body>
-      Holberton School
+        Holberton School
     </body>
 </html>
-EOF
+" > /data/web_static/releases/test/index.html
 
-# Sym-link creation
-sudo ln -sf "$path/releases/test/" "$path/current"
+# create link for current release
+ln -sf /data/web_static/releases/test /data/web_static/current
 
-# Ownership modification
-sudo chown -R ubuntu:ubuntu /data/
+# allow user to have permissions over directories
+chown -R ubuntu:ubuntu /data
 
-# Nginx config
-sudo sed -i "/listen 80 default_server/a location /hbnb_static { alias $path/current/;}" /etc/nginx/sites-enabled/default
+# update nginx configuration to add alias configuration
+grep -q "location /hbnb_static {" /etc/nginx/sites-available/default
+if [[ $? -eq 1 ]]; then
+    sed -i "/server_name _;/a \\\n\tlocation /hbnb_static {\n\t\talias /data/web_static/current/;\n\t}" /etc/nginx/sites-available/default
+fi
 
-# Restart nginx to apply changes
-sudo service nginx restart
+# restart nginx
+service nginx restart
