@@ -22,7 +22,7 @@ def hbnb():
 
 @web_app.route("/c/<text>", strict_slashes=False)
 def c_route(text):
-    """Returns a note about the C language."""
+    """Returns Python followed by a text."""
     return f"C {escape(text.replace('_', ' '))}"
 
 
